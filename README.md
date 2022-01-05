@@ -1,1 +1,1 @@
-# generate_heat_map
+# folium heat maps
