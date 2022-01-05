@@ -7,22 +7,16 @@ def generate_heat_map(df, df2, date, colorGradient, colorGradient2):
     df = df.loc[df.dates<=date]
     df2 = df2.loc[df2.dates<=date]
     print(df.head(20))
-    # Starting point of the map
     heat_map = folium.Map(location=location, tiles = 'CartoDB positron', zoom_start=9) 
     # save all lat and lon and rescaled magnitudes to list values 
     latlons2 = df2[['lat', 'lon']].values.tolist()
     HeatMap(latlons2, gradient=colorGradient2,min_opacity=.7, blur=1, radius=2).add_to(heat_map)
     latlonsmag = df[['lat', 'lon','mag_rescale']].values.tolist()
     HeatMap(latlonsmag, gradient=colorGradient, min_opacity=0.8, radius=12, blur=20).add_to(heat_map)
-
     provinces = 'data/provincies/B1_Provinciegrenzen_van_NederlandPolygon.shp'
     fields = 'data/jan-2022-nlog-fields_utm/jan-2022-NLOG-Fields_UTM.shp'
     heat_map = add_provinces(provinces,heat_map)
     heat_map = add_fields(fields, heat_map)
-    #add color legend to heatmap
-    # linear = cmp.LinearColormap(['blue', 'cyan', 'lime', 'yellow', 'red'], vmin=-1, vmax=6, caption = 'Earthquakes in NL')
-    # linear.add_to(heat_map)
-
     heat_map.save(f'earthquakes_{date}.html')
     time.sleep(1)
     save_png(date)
@@ -84,19 +78,6 @@ def add_text(filename,date):
     lineType)
     cv2.imwrite(f"{string}.jpg", img)
 
-def create_video():
-    image_folder = os.getcwd()
-    video_name = 'earthquakes2000-2021.avi'
-    images = [img for img in os.listdir(image_folder) if img.endswith(".jpg")]
-    images.sort()
-    frame = cv2.imread(os.path.join(image_folder, images[0]))
-    height, width, layers = frame.shape
-    video = cv2.VideoWriter(video_name, 0, 8, (width,height))
-    for image in images:
-        video.write(cv2.imread(os.path.join(image_folder, image)))
-    cv2.destroyAllWindows()
-    video.release()
-
 df = read_main_df('df_earthquakes.csv','2000-01-01')
 df2 = read_second_df('boreholes.xlsx')
 
@@ -118,4 +99,3 @@ stop = datetime.strptime(stop_date, "%Y-%m-%d")
 while start < stop:
     generate_heat_map(df, df2, start, colorGradient,colorGradient2)
     start = start + relativedelta(months=+1)
-create_video()
